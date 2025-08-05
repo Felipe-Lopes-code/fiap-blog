@@ -1,0 +1,8 @@
+_format_version: "3.0"
+services:
+  - name: blog-api
+    url: http://app:3000
+    routes:
+      - name: blog-route
+        paths:
+          - /api
