@@ -10,9 +10,18 @@ const updateUser = async (data, userId) => {
     where: { id: userId }
   });
 };
+const bcrypt = require('bcrypt');
+
 // User - Criação de novos Users
 const createUser = async (data) => {
-  return await User.create(data);
+  // Hash da senha antes de salvar
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+  
+  return await User.create({
+    ...data,
+    password: hashedPassword
+  });
 };
 // DELETE - Exclusão de User por ID
 const deleteUser = async (userId) => {

@@ -3,10 +3,10 @@ const postService = require('../services/post-services');
 // GET /posts - Lista todos os posts ordenados por data de criação
 const getAvailablePosts = async (req, res) => {
   try {
-    if (req.user.role = "professor") {
+    if (req.user.role == "professor") {
       const posts = await postService.getAllPosts();
       res.status(200).json(posts);   
-    } else if (req.user.role = "aluno") {
+    } else if (req.user.role == "aluno") {
       const posts = await postService.getAvailablePosts();
       res.status(200).json(posts);   
     }
@@ -54,11 +54,11 @@ const getSearchPost = async (req, res) => {
 // POST /posts - Criar um novo post
 const createPost = async (req, res) => {
   try {
-    if (req.user.role = "professor") {
+    if (req.user.role == "professor") {
       const { title, content, author, authorId } = req.body;
       const newPost = await postService.createPost({ title, content, author, authorId });
       res.status(201).json(newPost);
-    } else if (req.user.role = "aluno") {
+    } else if (req.user.role == "aluno") {
       res.status(401).json({ error: 'Apenas professores podem criar posts' });   
     }
   } catch (error) {
@@ -71,10 +71,10 @@ const updatePost = async (req, res) => {
   const { id } = req.params;
   const data = req.body;
   try {
-    if (req.user.role = "professor") {
+    if (req.user.role == "professor") {
       await postService.updatePost(data, id);
       res.status(200).json({ message: 'Post atualizado com sucesso' });
-    } else if (req.user.role = "aluno") {
+    } else if (req.user.role == "aluno") {
       res.status(401).json({ error: 'Apenas professores podem editar posts' });   
     }
   } catch (error) {
@@ -86,10 +86,10 @@ const updatePost = async (req, res) => {
 const deletePost = async (req, res) => {
   const { id } = req.params;
   try {
-    if (req.user.role = "professor") {
+    if (req.user.role == "professor") {
       await postService.deletePost(id);
       res.status(200).json({ message: 'Post excluído com sucesso' });
-    } else if (req.user.role = "aluno") {
+    } else if (req.user.role == "aluno") {
       res.status(401).json({ error: 'Apenas professores podem excluir posts' });   
     }
   } catch (error) {
@@ -105,4 +105,4 @@ module.exports = {
   createPost,
   updatePost,
   deletePost
-};
+}

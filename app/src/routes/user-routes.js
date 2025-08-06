@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user-controllers');
-const authenticate = require('../middlewares/authMiddleware')
+const { login, authenticate } = require('../middlewares/authMiddleware')
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ const authenticate = require('../middlewares/authMiddleware')
  */
 
 
-router.post('/login', authenticate.login)
+router.post('/login', login)
 
 router.get('/', userController.getUsers);
 

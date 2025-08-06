@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
-const { User } = require('../model/user-model');
-const bcrypt = require('bcrypt'); 
+const User = require('../model/user-model');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -14,7 +15,12 @@ const login = async (req, res) => {
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
+      console.log('Falha na autenticação: senha incorreta');
       return res.status(401).json({ error: 'Senha incorreta' });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET não está configurado');
     }
 
     const token = jwt.sign(
@@ -25,7 +31,8 @@ const login = async (req, res) => {
 
     res.json({ token });
   } catch (err) {
-    res.status(500).json({ error: 'Erro ao fazer login' });
+    console.error('Erro de login:', err);
+    res.status(500).json({ error: `Erro ao fazer login: ${err.message}` });
   }
 };
 

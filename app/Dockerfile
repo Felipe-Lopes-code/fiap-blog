@@ -10,7 +10,7 @@ COPY package*.json ./
 
 RUN npm install --omit=dev
 
-COPY src ./src/
+COPY . .
 
 EXPOSE $PORT
 CMD ["node", "src/index.js"]

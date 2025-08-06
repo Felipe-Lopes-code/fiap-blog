@@ -25,9 +25,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 }));
 
 // // Sync com banco de dados
-// sequelize.sync({ alter: true }).then(() => {
-//   console.log('Banco sincronizado');
-// });
+sequelize.sync({ alter: true }).then(() => {
+  console.log('Banco sincronizado');
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
