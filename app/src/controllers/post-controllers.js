@@ -11,7 +11,7 @@ const getAvailablePosts = async (req, res) => {
       res.status(200).json(posts);   
     }
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar os posts disponíveis' });
+    res.status(500).json({ error: 'Erro ao buscar os posts disponíveis.' });
   }
 };
 
@@ -22,7 +22,7 @@ const getPostsByAuthorId = async (req, res) => {
     const posts = await postService.getPostsByAuthorId(authorId);
     res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar os posts do autor' });
+    res.status(500).json({ error: 'Erro ao buscar os posts do autor.' });
   }
 };
 
@@ -32,11 +32,11 @@ const getPostById = async (req, res) => {
   try {
     const post = await postService.getPostById(id);
     if (!post) {
-      return res.status(404).json({ error: 'Post não encontrado' });
+      return res.status(404).json({ error: 'Post não encontrado.' });
     }
     res.status(200).json(post);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar o post' });
+    res.status(500).json({ error: 'Erro ao buscar o post.' });
   }
 };
 
@@ -47,22 +47,33 @@ const getSearchPost = async (req, res) => {
     const results = await postService.getSearchPost(q || '');
     res.status(200).json(results);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar postagens' });
+    res.status(500).json({ error: 'Erro ao buscar postagens.' });
   }
 };
 
 // POST /posts - Criar um novo post
 const createPost = async (req, res) => {
   try {
-    if (req.user.role == "professor") {
-      const { title, content, author, authorId } = req.body;
-      const newPost = await postService.createPost({ title, content, author, authorId });
-      res.status(201).json(newPost);
-    } else if (req.user.role == "aluno") {
-      res.status(401).json({ error: 'Apenas professores podem criar posts' });   
+    // Verificar se o usuário é um professor
+    if (req.user.role !== "professor") {
+      return res.status(401).json({ error: 'Apenas professores podem criar posts.' });
     }
+
+    // Pegar dados do body e adicionar informações do usuário autenticado
+    const { title, content } = req.body;
+    
+    const postData = {
+      title,
+      content,
+      authorId: req.user.id // Usar o ID do usuário autenticado
+    };
+
+    // Criar o post
+    const newPost = await postService.createPost(postData);
+    res.status(201).json(newPost);
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao criar o post' });
+    console.error('Erro ao criar post:', error);
+    res.status(400).json({ error: error.message || 'Erro ao criar o post' });
   }
 };
 
@@ -73,12 +84,12 @@ const updatePost = async (req, res) => {
   try {
     if (req.user.role == "professor") {
       await postService.updatePost(data, id);
-      res.status(200).json({ message: 'Post atualizado com sucesso' });
+      res.status(200).json({ message: 'Post atualizado com sucesso.' });
     } else if (req.user.role == "aluno") {
-      res.status(401).json({ error: 'Apenas professores podem editar posts' });   
+      res.status(401).json({ error: 'Apenas professores podem editar posts.' });   
     }
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao atualizar o post' });
+    res.status(400).json({ error: 'Erro ao atualizar o post.' });
   }
 };
 
@@ -88,9 +99,9 @@ const deletePost = async (req, res) => {
   try {
     if (req.user.role == "professor") {
       await postService.deletePost(id);
-      res.status(200).json({ message: 'Post excluído com sucesso' });
+      res.status(200).json({ message: 'Post excluído com sucesso.' });
     } else if (req.user.role == "aluno") {
-      res.status(401).json({ error: 'Apenas professores podem excluir posts' });   
+      res.status(401).json({ error: 'Apenas professores podem excluir posts.' });   
     }
   } catch (error) {
     res.status(400).json({ error: 'Erro ao excluir o post' });

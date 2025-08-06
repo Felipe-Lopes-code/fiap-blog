@@ -1,5 +1,6 @@
 const Post = require('../model/post-model');
 const { Op } = require("sequelize");
+const User = require('../model/user-model');
 
 
 const getAllPosts = async () => {
@@ -40,7 +41,29 @@ const getSearchPost = async (searchTerm) => {
 
 // POST - Criação de novos posts
 const createPost = async (data) => {
-  return await Post.create(data);
+  try {
+    // Validar campos obrigatórios
+    if (!data.title || !data.content) {
+      throw new Error('Título e conteúdo são obrigatórios');
+    }
+
+    // Validar se o autor existe
+    const author = await User.findByPk(data.authorId);
+    if (!author) {
+      throw new Error('Autor não encontrado');
+    }
+
+    // Criar o post
+    return await Post.create({
+      title: data.title,
+      content: data.content,
+      author: author.name,
+      authorId: author.id,
+      available: true // por padrão o post está disponível
+    });
+  } catch (error) {
+    throw new Error(error.message || 'Erro ao criar o post');
+  }
 };
 
 // PUT - Atualização de um post existente

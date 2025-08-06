@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/post-controllers');
-const authenticate = require('../middlewares/authMiddleware')
+const { authenticate } = require('../middlewares/authMiddleware')
 
 /**
  * @swagger
@@ -198,7 +198,7 @@ const authenticate = require('../middlewares/authMiddleware')
 
 
 // GET - Todos os posts disponíveis ordenados pela data de criação (desc)
-router.get('/', authenticate.authenticate, postController.getAvailablePosts);
+router.get('/', authenticate, postController.getAvailablePosts);
 
 // GET - Post por ID
 router.get('/:id', postController.getPostById);
@@ -210,12 +210,12 @@ router.get('/author/:authorId', postController.getPostsByAuthorId);
 router.get('/search', postController.getSearchPost);
 
 // POST - Criar novo post
-router.post('/', authenticate.authenticate, postController.createPost);
+router.post('/', authenticate, postController.createPost);
 
 // PUT - Atualizar post
-router.put('/:id', authenticate.authenticate, postController.updatePost);
+router.put('/:id', authenticate, postController.updatePost);
 
 // DELETE - Remover post
-router.delete('/:id', authenticate.authenticate, postController.deletePost);
+router.delete('/:id', authenticate, postController.deletePost);
 
 module.exports = router;
