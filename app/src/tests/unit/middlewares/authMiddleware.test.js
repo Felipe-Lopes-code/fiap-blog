@@ -1,17 +1,25 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { authenticate, login } = require('../../../middlewares/authMiddleware');
-const { User } = require('../../../model/user-model');
 
 // Mock dependencies
 jest.mock('jsonwebtoken');
 jest.mock('bcrypt');
-jest.mock('../../../model/user-model', () => ({
-  User: {
-    findOne: jest.fn(),
-    findByPk: jest.fn()
-  }
-}));
+jest.mock('../../../model/user-model', () => {
+  const mockUser = {
+    id: 1,
+    email: 'test@example.com',
+    password: 'hashedPassword',
+    role: 'user'
+  };
+  
+  return {
+    findOne: jest.fn().mockResolvedValue(mockUser),
+    findByPk: jest.fn().mockResolvedValue(mockUser)
+  };
+});
+
+const User = require('../../../model/user-model');
 
 describe('Authentication Middleware', () => {
   let req;

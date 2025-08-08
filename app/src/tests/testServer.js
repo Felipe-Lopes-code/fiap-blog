@@ -1,15 +1,23 @@
 const express = require('express');
 const asyncHandler = require('express-async-handler');
 const { authenticate } = require('../middlewares/authMiddleware');
-const router = express.Router();
+const { Post } = require('../model/post-model');
+const { mockUser } = require('./testConfig');
+
+const app = express();
+app.use(express.json());
+
+// Middleware para mock do usuário autenticado
+app.use((req, res, next) => {
+  req.user = mockUser;
+  next();
+});
 
 // Mock das rotas de posts
 const postRoutes = express.Router();
-postRoutes.get('/', asyncHandler(async (req, res) => {
-  const posts = [
-    { id: 1, title: 'Post 1', content: 'Content 1' },
-    { id: 2, title: 'Post 2', content: 'Content 2' }
-  ];
+
+postRoutes.get('/', authenticate, asyncHandler(async (req, res) => {
+  const posts = await Post.findAll();
   res.status(200).json(posts);
 }));
 
@@ -67,14 +75,11 @@ userRoutes.post('/login', asyncHandler(async (req, res) => {
   }
 }));
 
-// Cria uma instância do Express para testes
-const app = express();
-
-// Configuração dos middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 // Configuração das rotas
+app.use('/posts', postRoutes);
+app.use('/users', userRoutes);
+
+module.exports = app;
 // Rota de usuários não precisa de autenticação
 app.use('/users', userRoutes);
 
