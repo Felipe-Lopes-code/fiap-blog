@@ -53,3 +53,10 @@ services:
           key_names:
             - apikey
           hide_credentials: true
+          key_in_body: false
+          run_on_preflight: true
+
+consumers:
+  - username: blog-api-user
+    keyauth_credentials:
+      - key: BLOG-API-KEY-2025

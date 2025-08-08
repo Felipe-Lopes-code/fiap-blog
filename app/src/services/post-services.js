@@ -29,14 +29,29 @@ const getPostById = async (postId) => {
 
 // GET - Pesquisa de posts por termo no título ou conteúdo
 const getSearchPost = async (searchTerm) => {
-  return await Post.findAll({
-    where: {
-      [Op.or]: [
-        { title: { [Op.iLike]: `%${searchTerm}%` } },
-        { content: { [Op.iLike]: `%${searchTerm}%` } }
-      ]
+  try {
+    if (!searchTerm) {
+      return await Post.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: 10
+      });
     }
-  });
+
+    const searchPattern = `%${searchTerm}%`;
+    return await Post.findAll({
+      where: {
+        [Op.or]: [
+          { title: { [Op.like]: searchPattern } },
+          { content: { [Op.like]: searchPattern } }
+        ],
+        available: true // Garante que só retorna posts disponíveis
+      },
+      order: [['createdAt', 'DESC']]
+    });
+  } catch (error) {
+    console.error('Erro na pesquisa:', error);
+    throw new Error('Erro ao realizar a pesquisa: ' + error.message);
+  }
 };
 
 // POST - Criação de novos posts

@@ -44,10 +44,35 @@ const getPostById = async (req, res) => {
 const getSearchPost = async (req, res) => {
   const { q } = req.query;
   try {
-    const results = await postService.getSearchPost(q || '');
-    res.status(200).json(results);
+    // Se não houver termo de busca, retorna erro
+    if (!q) {
+      return res.status(400).json({ 
+        error: 'Termo de busca é obrigatório',
+        message: 'Use o parâmetro "q" para especificar o termo de busca'
+      });
+    }
+
+    const results = await postService.getSearchPost(q);
+    
+    // Se não encontrou resultados
+    if (results.length === 0) {
+      return res.status(404).json({
+        message: 'Nenhum post encontrado com o termo especificado',
+        searchTerm: q
+      });
+    }
+
+    res.status(200).json({
+      results,
+      count: results.length,
+      searchTerm: q
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar postagens.' });
+    console.error('Erro na busca:', error);
+    res.status(500).json({ 
+      error: 'Erro ao buscar postagens',
+      message: error.message
+    });
   }
 };
 
