@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/post-controllers');
-const authenticate = require('../middlewares/authMiddleware')
+const { authenticate } = require('../middlewares/authMiddleware')
 
 /**
  * @swagger
@@ -176,7 +176,7 @@ const authenticate = require('../middlewares/authMiddleware')
  * @swagger
  * /posts/search:
  *   get:
- *     summary: Pesquisa posts
+ *     summary: Pesquisa posts por título ou conteúdo
  *     tags: [Posts]
  *     parameters:
  *       - in: query
@@ -184,38 +184,53 @@ const authenticate = require('../middlewares/authMiddleware')
  *         schema:
  *           type: string
  *         required: true
- *         description: Termo de pesquisa
+ *         description: Termo de pesquisa (mínimo 2 caracteres)
  *     responses:
  *       200:
  *         description: Resultados da pesquisa
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
+ *               type: object
+ *               properties:
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 count:
+ *                   type: integer
+ *                   description: Número de resultados encontrados
+ *                 searchTerm:
+ *                   type: string
+ *                   description: Termo usado na busca
+ *       400:
+ *         description: Termo de busca não fornecido ou inválido
+ *       404:
+ *         description: Nenhum resultado encontrado
+ *       500:
+ *         description: Erro interno do servidor
  */
 
 
 // GET - Todos os posts disponíveis ordenados pela data de criação (desc)
-router.get('/', authenticate.authenticate, postController.getAvailablePosts);
-
-// GET - Post por ID
-router.get('/:id', postController.getPostById);
-
-// GET - Posts por authorId (query param ou rota separada, ex: //author/:authorId)
-router.get('/author/:authorId', postController.getPostsByAuthorId);
+router.get('/', authenticate, postController.getAvailablePosts);
 
 // GET - Pesquisa (ex: //search?q=termo)
 router.get('/search', postController.getSearchPost);
 
+// GET - Posts por authorId (query param ou rota separada, ex: //author/:authorId)
+router.get('/author/:authorId', postController.getPostsByAuthorId);
+
+// GET - Post por ID (deve ser a última rota com parâmetro)
+router.get('/:id', postController.getPostById);
+
 // POST - Criar novo post
-router.post('/', authenticate.authenticate, postController.createPost);
+router.post('/', authenticate, postController.createPost);
 
 // PUT - Atualizar post
-router.put('/:id', authenticate.authenticate, postController.updatePost);
+router.put('/:id', authenticate, postController.updatePost);
 
 // DELETE - Remover post
-router.delete('/:id', authenticate.authenticate, postController.deletePost);
+router.delete('/:id', authenticate, postController.deletePost);
 
 module.exports = router;

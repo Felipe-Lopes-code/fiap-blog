@@ -10,6 +10,9 @@ Este é um projeto de API RESTful para um sistema de blog, desenvolvido com Node
 - Sequelize (ORM)
 - Docker & Docker Compose
 - Kong (API Gateway)
+  - Rate Limiting (limitação de requisições)
+  - CORS (Cross-Origin Resource Sharing)
+  - Autenticação via API Key
 - JWT para autenticação
 - Swagger para documentação
 - BCrypt para criptografia
@@ -109,18 +112,213 @@ http://localhost:3000/api-docs
 - GET /users - Listar usuários
 
 ### Posts
-- GET /posts - Listar posts
-- POST /posts - Criar novo post
-- GET /posts/:id - Obter post específico
-- PUT /posts/:id - Atualizar post
-- DELETE /posts/:id - Deletar post
+
+> ⚠️ **Nota**: Os endpoints marcados com 🔒 requerem autenticação (Bearer Token)
+
+#### Listar Posts
+- 🔒 `GET /posts` - Lista todos os posts disponíveis
+  ```bash
+  curl -H "Authorization: Bearer seu-token" http://localhost:3000/posts
+  ```
+
+#### Criar Post
+- 🔒 `POST /posts` - Criar novo post (apenas para professores)
+  ```json
+  {
+    "title": "Título do Post",
+    "content": "Conteúdo do post"
+  }
+  ```
+  > **Nota**: O autor será automaticamente definido com base no usuário autenticado.
+
+#### Obter Post Específico
+- `GET /posts/:id` - Obter post por ID
+  ```bash
+  curl http://localhost:3000/posts/1
+  ```
+
+#### Buscar Posts por Autor
+- `GET /posts/author/:authorId` - Lista posts de um autor
+  ```bash
+  curl http://localhost:3000/posts/author/1
+  ```
+
+#### Pesquisar Posts
+- `GET /posts/search?q=termo` - Pesquisa posts por título ou conteúdo
+  ```http
+  GET http://localhost:8000/api/posts/search?q=tecnologia
+  Header: apikey: BLOG-API-KEY-2025
+  ```
+
+  > **IMPORTANTE**: A rota de busca deve ser chamada exatamente como mostrado acima. 
+  > A ordem é importante: primeiro `/posts`, depois `/search`, e por fim o parâmetro `?q=termo`.
+
+  **Exemplos de busca:**
+  - ✅ Correto: `http://localhost:8000/api/posts/search?q=tecnologia`
+  - ❌ Incorreto: `http://localhost:8000/api/posts?search=tecnologia`
+  - ❌ Incorreto: `http://localhost:8000/api/posts/?search?q=tecnologia`
+
+  **Resposta de Sucesso:**
+  ```json
+  {
+    "results": [
+      {
+        "id": 1,
+        "title": "Tecnologia na Educação",
+        "content": "...",
+        "author": "Nome do Autor",
+        "createdAt": "2025-08-08T..."
+      }
+    ],
+    "count": 1,
+    "searchTerm": "tecnologia"
+  }
+  ```
+
+  **Possíveis Erros:**
+  - 400: Termo de busca não fornecido
+  - 404: Nenhum resultado encontrado
+  - 500: Erro interno do servidor
+
+#### Atualizar Post
+- 🔒 `PUT /posts/:id` - Atualizar post existente
+  ```json
+  {
+    "title": "Título Atualizado",
+    "content": "Conteúdo atualizado",
+    "available": true
+  }
+  ```
+
+#### Deletar Post
+- 🔒 `DELETE /posts/:id` - Remover post
+  ```bash
+  curl -X DELETE -H "Authorization: Bearer seu-token" http://localhost:3000/posts/1
+  ```
 
 ## 🔒 Autenticação
 
-A API utiliza JWT (JSON Web Tokens) para autenticação. Para acessar endpoints protegidos, é necessário:
-1. Criar uma conta através do endpoint `/users`
-2. Fazer login através do endpoint `/users/login`
-3. Usar o token retornado no header `Authorization` das requisições
+A API utiliza dois níveis de autenticação:
+1. API Key (Kong Gateway)
+2. JWT (JSON Web Tokens)
+
+### API Key Authentication
+
+Todas as requisições através do Kong Gateway (porta 8000) precisam incluir uma API Key:
+
+```http
+apikey: BLOG-API-KEY-2025
+```
+
+### JWT Authentication
+
+Para endpoints protegidos, além da API Key, você precisa do token JWT. Siga estes passos:
+
+### 1. Criar uma conta (caso ainda não tenha)
+```http
+POST /users
+Content-Type: application/json
+
+{
+    "name": "Seu Nome",
+    "email": "seu-email@exemplo.com",
+    "password": "sua-senha",
+    "role": "user"
+}
+```
+
+### 2. Fazer login para obter o token
+```http
+POST /users/login
+Content-Type: application/json
+
+{
+    "email": "seu-email@exemplo.com",
+    "password": "sua-senha"
+}
+```
+
+Você receberá uma resposta como:
+```json
+{
+    "token": "seu-token-jwt-aqui"
+}
+```
+
+### 3. Usar o token nas requisições protegidas
+
+#### No Insomnia:
+1. Na requisição desejada, vá até a aba "Auth"
+2. Selecione "Bearer Token"
+3. Cole o token recebido no campo "Token"
+
+OU
+
+1. Vá até a aba "Headers"
+2. Adicione um header:
+   - Nome: `Authorization`
+   - Valor: `Bearer seu-token-jwt-aqui`
+
+### Configurando o Insomnia
+
+#### 1. Configuração Base
+1. Abra o Insomnia
+2. Crie um novo Environment (Ambiente) com as variáveis base:
+   ```json
+   {
+     "baseUrl": "http://localhost:8000/api",
+     "apiKey": "BLOG-API-KEY-2025"
+   }
+   ```
+
+#### 2. Configuração dos Headers
+Para cada requisição, você precisará configurar:
+
+1. Na aba "Headers":
+   - Nome: `apikey`
+   - Valor: `{% raw %}{{ _.apiKey }}{% endraw %}`
+
+2. Para endpoints protegidos, adicione também:
+   - Nome: `Authorization`
+   - Valor: `Bearer seu-jwt-token`
+
+#### 3. Exemplo de Fluxo Completo
+
+1. **Login (Obter JWT)**:
+   - Método: `POST`
+   - URL: `{% raw %}{{ _.baseUrl }}{% endraw %}/users/login`
+   - Header: `apikey: {% raw %}{{ _.apiKey }}{% endraw %}`
+   - Body (JSON):
+     ```json
+     {
+         "email": "seu-email@exemplo.com",
+         "password": "sua-senha"
+     }
+     ```
+
+2. **Criar Post (Usando JWT)**:
+   - Método: `POST`
+   - URL: `{% raw %}{{ _.baseUrl }}{% endraw %}/posts`
+   - Headers:
+     ```
+     apikey: {% raw %}{{ _.apiKey }}{% endraw %}
+     Authorization: Bearer seu-jwt-token
+     ```
+   - Body (JSON):
+     ```json
+     {
+         "title": "Título do Post",
+         "content": "Conteúdo do post"
+     }
+     ```
+
+#### Via cURL:
+```bash
+curl -X GET \
+  http://localhost:8000/api/posts \
+  -H 'apikey: BLOG-API-KEY-2025' \
+  -H 'Authorization: Bearer seu-jwt-token'
+```
 
 ## 🤝 Contribuindo
 
@@ -148,6 +346,16 @@ A API utiliza JWT (JSON Web Tokens) para autenticação. Para acessar endpoints 
    - Verifique os logs usando `docker-compose logs -f`
    - Certifique-se de que as portas necessárias estão disponíveis
    - Tente reconstruir os containers com `docker-compose up -d --build`
+
+4. **Erro 500 na busca de posts**
+   - Certifique-se de usar o parâmetro `q` na URL: `/posts/search?q=termo`
+   - Verifique se o termo de busca está codificado corretamente para URL
+   - Se o erro persistir, verifique os logs do servidor usando `docker-compose logs app`
+   
+   Exemplo de busca correta:
+   ```http
+   GET http://localhost:8000/api/posts/search?q=tecnologia
+   ```
 
 4. **Erro "secretOrPrivateKey must have a value"**
    - Certifique-se de que a variável JWT_SECRET está definida no arquivo `.env`

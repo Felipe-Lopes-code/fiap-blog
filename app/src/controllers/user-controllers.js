@@ -14,10 +14,22 @@ const getUsers = async (req, res) => {
 const createUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+
+    // Validação básica
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios: name, email, password e role' 
+      });
+    }
+
     const newUser = await userService.createUser({ name, email, password, role });
     res.status(201).json(newUser);
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao criar usuário' });
+    console.error('Erro ao criar usuário:', error);
+    if (error.message === 'Email já cadastrado') {
+      return res.status(409).json({ error: 'Email já cadastrado' });
+    }
+    res.status(400).json({ error: error.message || 'Erro ao criar usuário' });
   }
 };
 

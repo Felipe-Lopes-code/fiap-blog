@@ -1,51 +1,14 @@
 const request = require('supertest');
-const app = require('../testServer');
+const app = require('../_testServer');
 const { Post } = require('../../model/post-model');
-const { User } = require('../../model/user-model');
-const jwt = require('jsonwebtoken');
-
-// Mock dos modelos
-jest.mock('../../model/post-model', () => {
-  const mockPost = {
-    id: 1,
-    title: 'Test Post',
-    content: 'Test Content',
-    userId: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-
-  return {
-    Post: {
-      findAll: jest.fn().mockResolvedValue([mockPost]),
-      findByPk: jest.fn().mockResolvedValue(mockPost),
-      create: jest.fn().mockImplementation((data) => Promise.resolve({ ...mockPost, ...data })),
-      update: jest.fn().mockResolvedValue([1]),
-      destroy: jest.fn().mockResolvedValue(1),
-      findOne: jest.fn().mockResolvedValue(mockPost)
-    }
-  };
-});
-
-jest.mock('../../model/user-model', () => ({
-  User: {
-    findByPk: jest.fn()
-  }
-}));
-
-// Define JWT_SECRET para testes
-process.env.JWT_SECRET = 'test-secret-key';
+const { mockUser, mockPost, generateToken } = require('../testConfig');
 
 describe('Posts Integration Tests', () => {
   let authToken;
   let server;
-  const mockUser = {
-    id: 1,
-    email: 'test@example.com',
-    role: 'user'
-  };
 
   beforeAll((done) => {
+    authToken = generateToken();
     server = app.listen(0, () => {
       done();
     });
@@ -56,8 +19,17 @@ describe('Posts Integration Tests', () => {
   });
 
   beforeEach(() => {
-    authToken = jwt.sign({ id: mockUser.id, role: mockUser.role }, process.env.JWT_SECRET);
-    User.findByPk.mockResolvedValue(mockUser);
+    // Configuração do token de autenticação
+    authToken = generateToken(mockUser);
+    process.env.JWT_SECRET = 'test-secret-key';
+
+    // Mock das funções do modelo Post
+    jest.spyOn(Post, 'findAll').mockResolvedValue([mockPost]);
+    jest.spyOn(Post, 'findOne').mockResolvedValue(mockPost);
+    jest.spyOn(Post, 'findByPk').mockResolvedValue(mockPost);
+    jest.spyOn(Post, 'create').mockImplementation((data) => Promise.resolve({ ...mockPost, ...data }));
+    jest.spyOn(Post, 'update').mockResolvedValue([1]);
+    jest.spyOn(Post, 'destroy').mockResolvedValue(1);
   });
 
   afterEach(() => {

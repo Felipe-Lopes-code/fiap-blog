@@ -24,7 +24,7 @@ const Post = sequelize.define('Post', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  author_id: { 
+  authorId: { 
     type: DataTypes.BIGINT,
     allowNull: false,
     references: {
