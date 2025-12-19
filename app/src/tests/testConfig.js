@@ -8,7 +8,7 @@ const mockUser = {
   id: 1,
   email: 'test@example.com',
   password: 'hashedPassword',
-  role: 'user'
+  role: 'professor'
 };
 
 // Mock de post para testes
@@ -52,18 +52,10 @@ jest.mock('../model/post-model', () => ({
 module.exports = {
   mockUser,
   mockPost,
-  generateToken,
-  User: require('../model/user-model'),
-  Post: require('../model/post-model').Post
+  generateToken
 };
 
 // Limpar todos os mocks após cada teste
 afterEach(() => {
   jest.clearAllMocks();
 });
-
-module.exports = {
-  mockUser,
-  mockPost,
-  generateToken
-};

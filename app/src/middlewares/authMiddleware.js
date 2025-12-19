@@ -34,10 +34,7 @@ const login = async (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     console.error('Erro de login:', err);
-    if (!user) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
-    }
-    return res.status(401).json({ error: 'Senha incorreta' });
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
 
