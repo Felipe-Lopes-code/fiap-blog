@@ -2,6 +2,7 @@
   "name": "fiap-project",
   "version": "1.0.0",
   "description": "",
+  "license": "ISC",
   "main": "app/src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -12,22 +13,6 @@
     "test:clear": "jest --clearCache",
     "test:unit": "jest src/tests/unit",
     "test:integration": "jest src/tests/integration"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": ["<rootDir>/src/tests/setup.js"],
-    "moduleDirectories": ["node_modules", "src"],
-    "verbose": true,
-    "testTimeout": 10000,
-    "testMatch": [
-      "**/__tests__/**/*.[jt]s?(x)",
-      "**/?(*.)+(spec|test).[jt]s?(x)"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/index.js",
-      "!src/doc/**/*.js"
-    ]
   },
   "author": "",
   "license": "ISC",

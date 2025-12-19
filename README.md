@@ -49,6 +49,88 @@ DB_PASSWORD=postgres
 PGADMIN_DEFAULT_EMAIL=admin@admin.com
 PGADMIN_DEFAULT_PASSWORD=admin
 
+# JWT Secret
+JWT_SECRET=274003c4cfe07312ff4be753a7b0901886a8d69f3e588c438d
+```
+
+## 🐳 Como Executar
+
+```bash
+# Subir toda a infraestrutura
+docker-compose up -d
+
+# Verificar status dos containers
+docker-compose ps
+
+# Ver logs dos serviços
+docker-compose logs -f
+```
+
+## 📡 **Kong API Gateway - Configurado e Funcionando**
+
+### **Endpoints Disponíveis:**
+
+#### **📋 Documentação (Acesso Livre)**
+- **Swagger UI**: `http://localhost:8000/api-docs`
+- **Acesso Direto**: `http://localhost:3000/api-docs`
+
+#### **🔐 APIs Protegidas (Requer API Key)**
+- **Usuários**: `http://localhost:8000/api/users`
+- **Posts**: `http://localhost:8000/api/posts`
+
+### **🔑 Autenticação**
+Para acessar as APIs protegidas, use a API Key configurada:
+- **Chave**: `admin-key-123456`
+- **Header**: `apikey: admin-key-123456`
+
+### **📝 Exemplos de Uso**
+
+#### **Via cURL:**
+```bash
+# Acessar documentação (sem autenticação)
+curl http://localhost:8000/api-docs
+
+# Listar usuários (com autenticação)
+curl -H "apikey: admin-key-123456" http://localhost:8000/api/users
+
+# Listar posts (com autenticação)
+curl -H "apikey: admin-key-123456" http://localhost:8000/api/posts
+
+# Criar usuário (com autenticação)
+curl -X POST http://localhost:8000/api/users \
+  -H "apikey: admin-key-123456" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "João", "email": "joao@email.com", "password": "123456"}'
+```
+
+#### **Via PowerShell:**
+```powershell
+# Acessar documentação
+Invoke-WebRequest -Uri "http://localhost:8000/api-docs" -UseBasicParsing
+
+# Listar usuários (com autenticação)  
+Invoke-WebRequest -Uri "http://localhost:8000/api/users" -Headers @{"apikey"="admin-key-123456"} -UseBasicParsing
+```
+
+### **🛡️ Recursos de Segurança Configurados:**
+- ✅ **Rate Limiting**: 100 req/min, 1000 req/hora
+- ✅ **CORS**: Configurado para aceitar requisições de qualquer origem
+- ✅ **API Key Authentication**: Autenticação obrigatória para endpoints sensíveis
+- ✅ **Request/Response Headers**: Headers de segurança configurados
+
+### **📊 Monitoramento**
+- **Kong Admin API**: `http://localhost:8001`
+- **Rate Limiting Headers**: Incluídos automaticamente nas respostas
+- **Request IDs**: Para rastreamento de requisições
+
+## 🔗 Serviços Disponíveis
+
+- **API Principal**: `http://localhost:3000`
+- **API via Kong**: `http://localhost:8000` 
+- **Documentação Swagger**: `http://localhost:8000/api-docs`
+- **PgAdmin**: `http://localhost:5050`
+- **Kong Admin**: `http://localhost:8001`
+
 # JWT Configuration (OBRIGATÓRIO para autenticação)
 JWT_SECRET=b429262429f595579db7f3906c600de6060e069d6ab13287ff5af7a4c6cd11c0b0dcd8894111745359cdb86d3302ea14981c70e5892709c8d93b6c7f98268bcf
 ```
@@ -76,6 +158,152 @@ cd app
 npm install
 npm run dev
 ```
+
+## 🧪 Testes
+
+O projeto utiliza Jest para testes unitários e de integração.
+
+### Executando os Testes
+```bash
+cd app
+npm test                 # Executa todos os testes
+npm run test:unit       # Executa apenas testes unitários
+npm run test:coverage   # Executa testes com relatório de cobertura
+```
+
+### Estrutura dos Testes
+```
+app/src/tests/
+├── setup.js                          # Configuração global dos testes
+├── testServer.js                     # Servidor de teste
+├── integration/                      # Testes de integração
+│   └── posts.test.js                 # Testes das rotas de posts
+├── unit/                            # Testes unitários
+│   ├── middlewares/                 # Testes de middlewares
+│   │   └── authMiddleware.test.js   # Testes de autenticação
+│   └── services/                    # Testes de serviços
+│       └── post-services.test.js    # Testes do serviço de posts
+```
+
+### Cobertura de Testes
+
+#### Testes Unitários de Autenticação (authMiddleware.test.js)
+- ✅ Login com credenciais corretas
+- ✅ Tratamento de usuário não encontrado
+- ✅ Validação de senha incorreta
+- ✅ Autenticação de token JWT válido
+- ✅ Tratamento de token ausente
+- ✅ Validação de token inválido
+- ✅ Tratamento de usuário inexistente após validação do token
+
+#### Testes Unitários de Posts (post-services.test.js)
+- ✅ Busca de posts por termo
+- ✅ Criação de post com dados válidos
+- ✅ Validação de campos obrigatórios na criação de posts
+
+### Mocks e Fixtures
+Os testes utilizam mocks para:
+- Modelo de Usuário (User)
+  - Simulação de busca por email e ID
+  - Validação de senha com bcrypt
+- Modelo de Post
+  - Operações CRUD
+  - Busca por termo
+- Autenticação JWT
+  - Geração e verificação de tokens
+```
+app/src/tests/
+├── setup.js              # Configuração global dos testes
+├── testServer.js         # Servidor de teste
+├── integration/          # Testes de integração
+│   └── posts.test.js     # Testes das rotas de posts
+├── unit/                 # Testes unitários
+│   └── middlewares/      # Testes de middlewares
+└── mocks/               # Mocks para testes
+```
+
+### Escrevendo Testes
+
+1. **Testes Unitários** (exemplo de middleware):
+```javascript
+const { authenticate } = require('../../middlewares/authMiddleware');
+
+describe('Auth Middleware', () => {
+  it('should validate JWT token', async () => {
+    // seu teste aqui
+  });
+});
+```
+
+2. **Testes de Integração** (exemplo de rota):
+```javascript
+const request = require('supertest');
+const app = require('../_testServer');
+
+describe('Post Routes', () => {
+  it('should create a new post', async () => {
+    // seu teste aqui
+  });
+});
+```
+
+## 🚀 Deploy
+
+### Deploy para Docker Hub
+
+1. **Login no Docker Hub**:
+```bash
+docker login
+```
+
+2. **Build da Imagem**:
+```bash
+docker build -t seu-usuario/fiap-blog:latest ./app
+```
+
+3. **Push para Docker Hub**:
+```bash
+docker push seu-usuario/fiap-blog:latest
+```
+
+### Deploy para Fly.io
+
+1. **Instalar Flyctl**:
+```bash
+curl -L https://fly.io/install.sh | sh
+```
+
+2. **Login no Fly.io**:
+```bash
+fly auth login
+```
+
+3. **Configurar Segredos**:
+```bash
+fly secrets set JWT_SECRET=seu-segredo-aqui
+fly secrets set DB_PASSWORD=sua-senha-aqui
+```
+
+4. **Deploy**:
+```bash
+fly deploy
+```
+
+### CI/CD com GitHub Actions
+
+O projeto usa GitHub Actions para CI/CD automático. Para configurar:
+
+1. **Adicionar Segredos no GitHub**:
+   - `FLY_API_TOKEN`: Token de API do Fly.io
+   - `FLY_APP_NAME`: Nome do seu app no Fly.io
+
+2. **Pipeline de CI/CD**:
+   - ✅ Checkout do código
+   - ✅ Setup Node.js
+   - ✅ Instalação de dependências
+   - ✅ Execução de testes
+   - ✅ Build da imagem Docker
+   - ✅ Deploy para Fly.io
 
 ## 📚 Estrutura do Projeto
 

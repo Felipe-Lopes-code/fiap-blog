@@ -1,0 +1,30 @@
+{
+  "testEnvironment": "node",
+  "setupFilesAfterEnv": ["<rootDir>/src/tests/setup.js"],
+  "moduleDirectories": ["node_modules", "src"],
+  "roots": [
+    "<rootDir>/src"
+  ],
+  "coveragePathIgnorePatterns": [
+    "/node_modules/"
+  ],
+  "moduleFileExtensions": ["js", "json"],
+  "testMatch": [
+    "**/?(*.)+(spec|test).[jt]s?(x)"
+  ],
+  "collectCoverageFrom": [
+    "src/**/*.js",
+    "!src/index.js",
+    "!src/doc/**/*.js"
+  ],
+  "verbose": true,
+  "testTimeout": 10000,
+  "coverageThreshold": {
+    "global": {
+      "branches": 70,
+      "functions": 70,
+      "lines": 70,
+      "statements": 70
+    }
+  }
+}

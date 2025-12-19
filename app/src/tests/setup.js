@@ -20,9 +20,9 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret-key';
 
 // Mock do Sequelize e seus modelos
-jest.mock('../model', () => require('./mocks/sequelizeMock'));
+jest.mock('../model', () => require('./mocks/sequelize.mock'));
 jest.mock('../model/user-model', () => {
-  const { User } = require('./mocks/sequelizeMock');
+  const { User } = require('./mocks/sequelize.mock');
   return { User };
 });
 
