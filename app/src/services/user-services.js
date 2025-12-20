@@ -53,6 +53,10 @@ const createUser = async (data) => {
 };
 // DELETE - Exclusão de User por ID
 const deleteUser = async (userId) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new Error('Usuário não encontrado');
+  }
   return await User.destroy({ where: { id: userId } });
 };
 

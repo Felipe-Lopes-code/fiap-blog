@@ -6,7 +6,9 @@
     "<rootDir>/src"
   ],
   "coveragePathIgnorePatterns": [
-    "/node_modules/"
+    "/node_modules/",
+    "/src/tests/",
+    "/src/doc/"
   ],
   "moduleFileExtensions": ["js", "json"],
   "testMatch": [
@@ -15,7 +17,8 @@
   "collectCoverageFrom": [
     "src/**/*.js",
     "!src/index.js",
-    "!src/doc/**/*.js"
+    "!src/doc/**/*.js",
+    "!src/tests/**/*.js"
   ],
   "verbose": true,
   "testTimeout": 10000,
